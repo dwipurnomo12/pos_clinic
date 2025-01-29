@@ -1,0 +1,105 @@
+﻿<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <ul class="nav">
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="index">
+                <span class="menu-title">Dashboard</span>
+                <i class="mdi mdi-home menu-icon"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
+                <span class="menu-title">Master</span>
+                <i class="menu-arrow"></i>
+                <i class="mdi mdi-invoice-list-outline menu-icon"></i>
+            </a>
+            <div class="collapse" id="ui-basic">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Item" asp-action="index">Items</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Category" asp-action="index">Item Categories</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Unit" asp-action="index">Item Units</a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Supplier" asp-action="index">
+                <span class="menu-title">Suppliers</span>
+                <i class="mdi mdi-account-arrow-right menu-icon"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Customer" asp-action="index">
+                <span class="menu-title">Customers</span>
+                <i class="mdi mdi-account-group-outline menu-icon"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#purchases" aria-expanded="false" aria-controls="purchases">
+                <span class="menu-title">Purchases Item</span>
+                <i class="menu-arrow"></i>
+                <i class="mdi mdi-cart-arrow-down menu-icon"></i>
+            </a>
+            <div class="collapse" id="purchases">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item">
+                        <a class="nav-link" href="pages/ui-features/buttons.html">Incoming items</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="pages/ui-features/dropdowns.html">Item returned </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#transaction" aria-expanded="false" aria-controls="transaction">
+                <span class="menu-title">Sales Transactions</span>
+                <i class="menu-arrow"></i>
+                <i class="mdi mdi-cart-plus menu-icon"></i>
+            </a>
+            <div class="collapse" id="transaction">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item">
+                        <a class="nav-link" href="pages/ui-features/buttons.html">Transaction</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="pages/ui-features/dropdowns.html">Item returned </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#report" aria-expanded="false" aria-controls="report">
+                <span class="menu-title">Report</span>
+                <i class="menu-arrow"></i>
+                <i class="mdi mdi-file-chart menu-icon"></i>
+            </a>
+            <div class="collapse" id="report">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item">
+                        <a class="nav-link" href="pages/ui-features/buttons.html">Items Stock</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="pages/ui-features/dropdowns.html">Purchases</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="pages/ui-features/dropdowns.html">Sales </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="pages/ui-features/dropdowns.html">Items Expired </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="pages/ui-features/dropdowns.html">Return Purchase </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="pages/ui-features/dropdowns.html">Sale Return</a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+    </ul>
+</nav>
