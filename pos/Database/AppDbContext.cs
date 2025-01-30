@@ -12,6 +12,7 @@ namespace pos.Database
         public DbSet<Unit> Units { get; set; }
         public DbSet<Customer> Customers { get; set; }  
         public DbSet<Supplier> Suppliers{ get; set; }
+        public DbSet<IncomingItem> IncomingItems { get; set; }
 
     }
 }

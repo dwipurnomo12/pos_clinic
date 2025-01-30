@@ -1,0 +1,52 @@
+﻿@model pos.Models.IncomingItem
+@{
+    ViewData["Title"] = "Add Item";
+}
+
+<!-- Modal -->
+<div class="modal fade" id="modal_add_incoming_item" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Add new item</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="ItemId">Item</label>
+                                <select asp-for="ItemId" asp-items="ViewBag.items" id="ItemId" class="form-control js-example-basic-single" style="width:100%" required>
+                                    <option value=""> -- Select Item -- </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="StockIn">Stock In</label>
+                                <input type="number" class="form-control" id="StockIn" required>
+                            </div>
+                        </div>
+                    </div>
+                   
+                    <div class="form-group">
+                        <label for="ExpiredDate">Expired Date</label>
+                        <input type="date" class="form-control" id="ExpiredDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="SupplierId">Supplier</label>
+                        <select asp-for="SupplierId" asp-items="ViewBag.suppliers" id="SupplierId" class="form-control" required>
+                            <option value=""> -- Select Supplier -- </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="Store" class="btn btn-gradient-primary me-2">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

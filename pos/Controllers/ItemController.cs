@@ -38,26 +38,6 @@ namespace pos.Controllers
             return View();
         }
 
-        // GET: Item/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var item = await _context.Items
-                .Include(i => i.Category)
-                .Include(i => i.Unit)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-
-            return View(item);
-        }
-
         // GET: Item/Create
         public IActionResult Create()
         {
