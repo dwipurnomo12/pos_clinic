@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace pos.Models
 {
@@ -31,5 +32,8 @@ namespace pos.Models
 
         [DataType(DataType.DateTime)]
         public DateTime? UpdatedAt { get; set; }
+
+        //Relationship one to many with Item
+        public ICollection<IncomingItem>? IncomingItems { get; set; }
     }
 }

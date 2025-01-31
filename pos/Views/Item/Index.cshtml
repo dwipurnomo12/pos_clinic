@@ -5,6 +5,7 @@
 
 @Html.Partial("/Views/Item/Create.cshtml")
 @Html.Partial("/Views/Item/Edit.cshtml")
+@Html.Partial("/Views/Item/Show.cshtml")
 
 <div class="content-wrapper">
     <div class="page-header">
@@ -46,7 +47,7 @@
                                     <th class="text-start">@Html.DisplayName("Code")</th>
                                     <th class="text-start">@Html.DisplayName("Name")</th>
                                     <th class="text-start">@Html.DisplayName("Price")</th>
-                                    <th class="text-start">@Html.DisplayName("Stock")</th>
+                                    <th class="text-start">@Html.DisplayName("Stock Total")</th>
                                     <th class="text-start">@Html.DisplayName("Category")</th>
                                     <th class="text-start">@Html.DisplayName("Unit")</th>
                                     <th class="text-start">@Html.DisplayName("Options")</th>
@@ -91,6 +92,9 @@
                                 <td class="text-start">${value.category.name}</td>
                                 <td class="text-start">${value.unit.name}</td>
                                 <td class="text-start">
+                                     <a href="javascript:void(0)" id="btn_show_item" data-id="${value.id}" class="btn btn-success btn-icon pt-2">
+                                        <i class="mdi mdi-eye-outline"></i>
+                                    </a>
                                     <a href="javascript:void(0)" id="btn_edit_item" data-id="${value.id}" class="btn btn-warning btn-icon pt-2">
                                         <i class="mdi mdi-pencil-box-outline"></i>
                                     </a>
@@ -164,6 +168,40 @@
                             text: response.message,
                         });
                     }
+                }
+            });
+        });
+
+        //Show Detail Item
+        $('body').on('click', '#btn_show_item', function () {
+            let item_id = $(this).data('id');
+            $.ajax({
+                url: '/Item/Detail',
+                type: 'GET',
+                data: { id: item_id },
+                cache: false,
+                success: function (response) {
+                    console.log(response);
+                    $('#modal_show_item').modal('show');
+                    $('#item_id').val(response.data.id);
+                    $('#Name_show').val(response.data.name);
+                    $('#Price_show').val(response.data.price);
+                    $("#CategoryId_show").val(response.data.categoryId).change();
+                    $("#UnitId_show").val(response.data.unitId).change();
+
+                    $("incomingItemsTable").empty();
+                    response.data.incomingItems.forEach(function (item) {
+                        let row = `
+                            <tr>
+                                <td class="text-start">${new Date(item.dateOfEntry).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
+                                <td>${item.batchNumber}</td>
+                                <td>${item.stockIn}</td>
+                                <td class="text-start">${new Date(item.expiredDate).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
+                                <td>${item.supplier.name}</td>
+                            </tr>
+                        `;
+                        $("#incomingItemsTable").append(row);
+                    });
                 }
             });
         });

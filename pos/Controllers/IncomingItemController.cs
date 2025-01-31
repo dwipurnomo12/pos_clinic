@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -26,9 +27,22 @@ namespace pos.Controllers
                 .Include(i => i.Item)
                 .Include(i => i.Supplier)
                 .OrderByDescending(i => i.Id)
+                .Select(i => new
+                {
+                    i.Id,
+                    transactionCode = i.TransactionCode,
+                    dateOfEntry = i.DateOfEntry.ToString("yyyy-MM-dd"),
+                    batchNumber = i.BatchNumber,
+                    stockIn = i.StockIn,
+                    expiredDate = i.ExpiredDate.ToString("yyyy-MM-dd"),
+                    ItemName = i.Item.Name,
+                    SupplierName = i.Supplier.Name
+                })
                 .ToListAsync();
+
             return Json(new { data = incomingItem });
         }
+
 
         // GET: Index
         public async Task<IActionResult> Index()
@@ -155,6 +169,7 @@ namespace pos.Controllers
                 incomingItem.TransactionCode = existingItem.TransactionCode;
                 incomingItem.BatchNumber = existingItem.BatchNumber;
 
+                // Calculate the difference of stock in
                 int stockInDiff = incomingItem.StockIn - existingItem.StockIn;
 
                 // Update the item stock
@@ -188,27 +203,41 @@ namespace pos.Controllers
         {
             if (id == null)
             {
-                return Json(new { success = false, message = "Something when wrong!" });
+                return Json(new { success = false, message = "Something went wrong!" });
             }
 
-            var incomingItem = await _context.IncomingItems.FindAsync(id);
-            if (incomingItem == null)
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                return Json(new { success = false, message = "Something when wrong!" });
-            }
+                try
+                {
+                    var incomingItem = await _context.IncomingItems.FindAsync(id);
+                    if (incomingItem == null)
+                    {
+                        return Json(new { success = false, message = "Something went wrong!" });
+                    }
 
-            var item = await _context.Items.FindAsync(incomingItem.ItemId);
-            if (item != null)
-            {
-                item.stock -= incomingItem.StockIn;
-                _context.Update(item);
-                await _context.SaveChangesAsync();
-            }
+                    var item = await _context.Items.FindAsync(incomingItem.ItemId);
+                    if (item != null)
+                    {
+                        item.stock -= incomingItem.StockIn; 
+                        _context.Items.Update(item);
+                    }
 
-            _context.IncomingItems.Remove(incomingItem);
-            await _context.SaveChangesAsync();
-            return Json(new { success = true, message = "Item deleted successfully!" });
+                    _context.IncomingItems.Remove(incomingItem);
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return Json(new { success = true, message = "Item deleted successfully!" });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return Json(new { success = false, message = "Error: " + ex.Message });
+                }
+            }
         }
+
 
 
         private bool IncomingItemExists(int id)

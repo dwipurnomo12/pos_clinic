@@ -3,8 +3,8 @@
     ViewData["Title"] = "List Incoming Item";
 }
 
-@Html.Partial("/Views/IncomingItem/Create.cshtml")
-@Html.Partial("/Views/IncomingItem/Edit.cshtml")
+@Html.Partial("/Views/ItemReturned/Create.cshtml")
+@Html.Partial("/Views/ItemReturned/Edit.cshtml")
 
 <div class="content-wrapper">
     <div class="page-header">
@@ -12,12 +12,12 @@
             <span class="page-title-icon bg-gradient-primary text-white me-2">
                 <i class="mdi mdi-invoice-list-outline"></i>
             </span>
-            Incoming Item
+            Item Returned
         </h3>
         <nav aria-label="breadcrumb">
             <ul class="breadcrumb">
                 <li class="breadcrumb-item active" aria-current="page">
-                    <span></span>Incoming Item List
+                    <span></span>Item Returned
                     <i class="mdi mdi-alert-circle-outline icon-sm text-primary align-middle"></i>
                 </li>
             </ul>
@@ -30,10 +30,10 @@
                 <div class="card-header">
                     <div class="row">
                         <div class="col-md-6">
-                            <h4 class="card-title">Item List</h4>
+                            <h4 class="card-title">List Item Returned</h4>
                         </div>
                         <div class="col-md-6">
-                            <a id="btn_add_incoming_item" class="btn btn-primary float-end">Add Data</a>
+                            <a id="btn_add_item_returned" class="btn btn-primary float-end">Add Data</a>
                         </div>
                     </div>
                 </div>
@@ -43,13 +43,9 @@
                             <thead>
                                 <tr>
                                     <th class="text-start">@Html.DisplayName("#")</th>
-                                    <th class="text-start">@Html.DisplayName("Transaction Code")</th>
-                                    <th class="text-start">@Html.DisplayName("Batch Number")</th>
-                                    <th class="text-start">@Html.DisplayName("Date")</th>
-                                    <th class="text-start">@Html.DisplayName("Item Name")</th>
-                                    <th class="text-start">@Html.DisplayName("Stock In")</th>
-                                    <th class="text-start">@Html.DisplayName("ExpiredDate")</th>
-                                    <th class="text-start">@Html.DisplayName("Supplier")</th>
+                                    <th class="text-start">@Html.DisplayName("Item")</th>
+                                    <th class="text-start">@Html.DisplayName("Stock Returned")</th>
+                                    <th class="text-start">@Html.DisplayName("Information")</th>
                                     <th class="text-start">@Html.DisplayName("Options")</th>
                                 </tr>
                             </thead>
@@ -71,7 +67,7 @@
         // Function to load and populate the DataTable
         function loadDataTable() {
             $.ajax({
-                url: "IncomingItem/GetIncomingItem",
+                url: "ItemReturned/GetItemReturned",
                 type: "GET",
                 dataType: "JSON",
                 success: function (response) {
@@ -80,18 +76,14 @@
                         let data = `
                             <tr class="data-row" id="index_${value.id}">
                                 <td class="text-start">${key + 1}</td>
-                                <td class="text-start">${value.transactionCode}</td>
-                                <td class="text-start">${value.batchNumber}</td>
-                                <td class="text-start">${new Date(value.dateOfEntry).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
-                                <td class="text-start">${value.itemName}</td>
-                                <td class="text-start">${value.stockIn}</td>
-                                <td class="text-start">${new Date(value.expiredDate).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
-                                <td class="text-start">${value.supplierName}</td>
+                                <td class="text-start">${value.itemName} - ${value.batchNumber}</td>
+                                <td class="text-start">${value.stockReturned}</td>
+                                <td class="text-start">${value.information}</td>
                                 <td class="text-start">
-                                    <a href="javascript:void(0)" id="btn_edit_incoming_item" data-id="${value.id}" class="btn btn-warning btn-icon pt-2">
+                                    <a href="javascript:void(0)" id="btn_edit_item_returned" data-id="${value.id}" class="btn btn-warning btn-icon pt-2">
                                         <i class="mdi mdi-pencil-box-outline"></i>
                                     </a>
-                                    <a href="javascript:void(0)" id="btn_delete_incoming_item" data-id="${value.id}" class="btn btn-danger btn-icon pt-2">
+                                    <a href="javascript:void(0)" id="btn_delete_item_returned" data-id="${value.id}" class="btn btn-danger btn-icon pt-2">
                                         <i class="mdi mdi-delete-outline"></i>
                                     </a>
                                 </td>
@@ -108,36 +100,33 @@
 
         // Clear value form input
         function clearForm() {
-            $('#StockIn').val('');
-            $('#ExpiredDate').val('');
-            $('#ItemId').val('');
-            $('#SupplierId').val('');
+            $('#IncomingItemId').val('');
+            $('#StockReturned').val('');
+            $('#Information').val('');
         }
 
-        // Show modal to add a new incoming_item
-        $('body').on('click', '#btn_add_incoming_item', function () {
-            $('#modal_add_incoming_item').modal('show');
+        // Show modal to add a new item_returned
+        $('body').on('click', '#btn_add_item_returned', function () {
+            $('#modal_add_item_returned').modal('show');
             clearForm();
         });
 
-        // Add a new incoming_item
+        // Add a new item_returned
         $('#Store').click(function (e) {
             e.preventDefault();
 
-            let StockIn = $('#StockIn').val();
-            let ExpiredDate = $('#ExpiredDate').val();
-            let ItemId = $('#ItemId').val();
-            let SupplierId = $('#SupplierId').val();
+            let IncomingItemId = $('#IncomingItemId').val();
+            let StockReturned = $('#StockReturned').val();
+            let Information = $('#Information').val();
             let formData = new FormData();
 
-            formData.append('StockIn', StockIn);
-            formData.append('ExpiredDate', ExpiredDate);
-            formData.append('ItemId', ItemId);
-            formData.append('SupplierId', SupplierId);
+            formData.append('IncomingItemId', IncomingItemId);
+            formData.append('StockReturned', StockReturned);
+            formData.append('Information', Information);
             formData.append('__RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());
 
             $.ajax({
-                url: '/IncomingItem/Create',
+                url: '/ItemReturned/Create',
                 type: "POST",
                 cache: false,
                 data: formData,
@@ -152,7 +141,7 @@
                             timer: 3000
                         });
 
-                        $('#modal_add_incoming_item').modal('hide'); // Hide modal
+                        $('#modal_add_item_returned').modal('hide'); // Hide modal
                         loadDataTable(); // Reload data
                     } else {
                         Swal.fire({
@@ -165,24 +154,22 @@
             });
         });
 
-        //Edit a incoming_item
-        $('body').on('click', '#btn_edit_incoming_item', function () {
+        //Edit a item_returned
+        $('body').on('click', '#btn_edit_item_returned', function () {
             let item_id = $(this).data('id');
 
             $.ajax({
-                url: '/IncomingItem/Edit',
+                url: '/ItemReturned/Edit',
                 type: 'GET',
                 data: { id: item_id },
                 cache: false,
                 success: function (response) {
-                    console.log(response);
-                    $('#modal_edit_incoming_item').modal('show');
+                    $('#modal_edit_item_returned').modal('show');
 
-                    $('#incomingItem_id').val(response.data.id);
-                    $('#StockIn_edit').val(response.data.stockIn);
-                    $('#ExpiredDate_edit').val(response.data.expiredDate);
-                    $("#ItemId_edit").val(response.data.itemId).change();
-                    $("#SupplierId_edit").val(response.data.supplierId).change();
+                    $('#itemReturned_id').val(response.data.id);
+                    $("#IncomingItemId_edit").val(response.data.incomingItemId).change();
+                    $('#StockReturned_edit').val(response.data.stockReturned);
+                    $('#Information_edit').val(response.data.information);
                 }
             });
         });
@@ -191,22 +178,20 @@
         $('#Update').click(function (e) {
             e.preventDefault();
 
-            let id = $('#incomingItem_id').val();
-            let StockIn = $('#StockIn_edit').val();
-            let ExpiredDate = $('#ExpiredDate_edit').val();
-            let ItemId = $('#ItemId_edit').val();
-            let SupplierId = $('#SupplierId_edit').val();
+            let id = $('#itemReturned_id').val();
+            let IncomingItemId = $('#IncomingItemId_edit').val();
+            let StockReturned = $('#StockReturned_edit').val();
+            let Information = $('#Information_edit').val();
             let formData = new FormData();
 
             formData.append('id', id);
-            formData.append('StockIn', StockIn);
-            formData.append('ExpiredDate', ExpiredDate);
-            formData.append('ItemId', ItemId);
-            formData.append('SupplierId', SupplierId);
+            formData.append('IncomingItemId', IncomingItemId);
+            formData.append('StockReturned', StockReturned);
+            formData.append('Information', Information);
             formData.append('__RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());
 
             $.ajax({
-                url: '/IncomingItem/Edit',
+                url: '/ItemReturned/Edit',
                 type: "POST",
                 cache: false,
                 data: formData,
@@ -220,7 +205,7 @@
                             showConfirmButton: true,
                             timer: 3000
                         });
-                        $('#modal_edit_incoming_item').modal('hide'); // Hide modal
+                        $('#modal_edit_item_returned').modal('hide'); // Hide modal
                         loadDataTable(); // Reload data
                         clearForm(); // Clear form input
                     } else {
@@ -235,7 +220,7 @@
         });
 
         // Delete a item
-        $('body').on('click', '#btn_delete_incoming_item', function () {
+        $('body').on('click', '#btn_delete_item_returned', function () {
             let id = $(this).data('id');
 
             Swal.fire({
@@ -249,7 +234,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/IncomingItem/Delete',
+                        url: '/ItemReturned/Delete',
                         type: 'POST',
                         data: { id: id },
                         success: function (response) {

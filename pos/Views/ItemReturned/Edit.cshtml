@@ -1,0 +1,48 @@
+﻿@model pos.Models.ItemReturned
+@{
+    ViewData["Title"] = "Edit Item Returned ";
+}
+
+<!-- Modal -->
+<div class="modal fade" id="modal_edit_item_returned" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Edit item returned</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="itemReturned_id" required>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="IncomingItemId">Incoming Item</label>
+                                <select asp-for="IncomingItemId" asp-items="ViewBag.IncomingItems" id="IncomingItemId_edit" class="form-control js-example-basic-single" style="width:100%" required>
+                                    <option value=""> -- Select Item -- </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="StockReturned">Stock Returned</label>
+                                <input type="number" class="form-control" id="StockReturned_edit" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Information">Information</label>
+                        <input type="text" class="form-control" id="Information_edit" required>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="Update" class="btn btn-gradient-primary me-2">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

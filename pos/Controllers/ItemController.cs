@@ -46,6 +46,26 @@ namespace pos.Controllers
             return View();
         }
 
+        // GET: Item/Show/5
+        public async Task<IActionResult> Detail(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var item = await _context.Items
+                .Include(i => i.Category)
+                .Include(i => i.Unit)
+                .Include(i => i.IncomingItems)
+                    .ThenInclude(i => i.Supplier)
+                .FirstOrDefaultAsync(i => i.Id == id);
+            if (item == null)
+            {
+                return NotFound();
+            }
+            return Json(new { data = item });
+        }
+
         // POST: Item/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.

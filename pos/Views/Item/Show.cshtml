@@ -1,0 +1,67 @@
+﻿@model pos.Models.Item
+@{
+    ViewData["Title"] = "Detail Item";
+}
+
+<!-- Modal -->
+<div class="modal modal-lg fade" id="modal_show_item" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Detail item</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="item_id" required>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="item">Item Name</label>
+                        <input type="text" class="form-control" id="Name_show" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text" id="basic-addon1">Rp</span>
+                            <input type="number" id="Price_show" class="form-control" aria-label="Price" aria-describedby="basic-addon1" placeholder="Enter price" disabled>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="CategoryId">Category</label>
+                        <select asp-for="CategoryId" asp-items="ViewBag.Categories" id="CategoryId_show" class="form-control" disabled>
+                            <option value=""> -- Select Category -- </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="UnitId">Unit</label>
+                        <select asp-for="UnitId" asp-items="ViewBag.units" id="UnitId_show" class="form-control" disabled>
+                            <option value=""> -- Select Unit -- </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="incomingItems">Incoming Items</label>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Batch Number</th>
+                                        <th>Stock</th>
+                                        <th>Expired Date</th>
+                                        <th>Supplier</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="incomingItemsTable">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
