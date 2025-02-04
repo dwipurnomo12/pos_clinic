@@ -71,32 +71,50 @@ namespace pos.Controllers
         {
             if (ModelState.IsValid)
             {
-                //update stock incoming item
-                var incomingItem = await _context.IncomingItems.FindAsync(itemReturned.IncomingItemId);
-                if (incomingItem != null)
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    incomingItem.StockIn -= itemReturned.StockReturned;
-                    _context.Update(incomingItem);
-                    await _context.SaveChangesAsync();
-                }
-
-                if(itemReturned.StockReturned > incomingItem.StockIn)
-                {
-                    return Json(new { success = false, message = "Something when wrong" });
+                    // Get Data incomingItem
+                    var incomingItem = await _context.IncomingItems.FindAsync(itemReturned.IncomingItemId);
+                    if (incomingItem == null)
+                    {
+                        return Json(new { success = false, message = "Incoming item not found" });
                     }
-
-                //update total stock in item
-                var item = await _context.Items.FindAsync(incomingItem.ItemId);
-                if (item != null)
-                {
-                    item.stock -= itemReturned.StockReturned;
-                    _context.Update(item);
+                    // Check stok
+                    if (itemReturned.StockReturned > incomingItem.StockIn)
+                    {
+                        return Json(new { success = false, message = "Stock returned cannot be greater than available stock" });
+                    }
+                    // Calculate stock returned difference
+                    int stockReturnedDiff = itemReturned.StockReturned;
+                    // Stock cannot be negative
+                    if (incomingItem.StockIn - stockReturnedDiff < 0)
+                    {
+                        return Json(new { success = false, message = "Stock cannot be negative" });
+                    }
+                    // Update stock incoming item
+                    incomingItem.StockIn -= stockReturnedDiff;
+                    _context.Update(incomingItem);
+                    // Get Data Incoming Item
+                    var item = await _context.Items.FindAsync(incomingItem.ItemId);
+                    if (item != null)
+                    {
+                        item.stock -= stockReturnedDiff;
+                        _context.Update(item);
+                    }
+                    // Save item returned
+                    _context.Add(itemReturned);
                     await _context.SaveChangesAsync();
+                    // Commit transaction
+                    await transaction.CommitAsync();
+                    return Json(new { success = true, message = "Data has been saved" });
                 }
-
-                _context.Add(itemReturned);
-                await _context.SaveChangesAsync();
-                return Json(new { success = true, message = "Data has been saved" });
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return Json(new { success = false, message = "An error occurred: " + ex.Message });
+                }
+                   
             }
             var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
             return Json(new { success = false, message = errors });
@@ -152,59 +170,71 @@ namespace pos.Controllers
 
             if (ModelState.IsValid)
             {
-                var existingItem = await _context.ItemReturneds.AsNoTracking().FirstOrDefaultAsync(i => i.Id == id);
-                if (existingItem == null)
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    return NotFound();
-                }
+                    var existingItem = await _context.ItemReturneds.AsNoTracking().FirstOrDefaultAsync(i => i.Id == id);
+                    if (existingItem == null)
+                    {
+                        return NotFound();
+                    }
 
-                // Get Data incomingItem
-                var incomingItem = await _context.IncomingItems.FindAsync(itemReturned.IncomingItemId);
-                if (incomingItem == null)
+                    // Get Data incomingItem
+                    var incomingItem = await _context.IncomingItems.FindAsync(itemReturned.IncomingItemId);
+                    if (incomingItem == null)
+                    {
+                        return Json(new { success = false, message = "Incoming item not found" });
+                    }
+
+                    // Check stok
+                    if (itemReturned.StockReturned > incomingItem.StockIn)
+                    {
+                        return Json(new { success = false, message = "Stock returned cannot be greater than available stock" });
+                    }
+
+                    // Calculate stock returned difference
+                    int stockReturnedDiff = itemReturned.StockReturned - existingItem.StockReturned;
+
+                    // Stock cannot be negative
+                    if (incomingItem.StockIn - stockReturnedDiff < 0)
+                    {
+                        return Json(new { success = false, message = "Stock cannot be negative" });
+                    }
+
+                    // Update stock incoming item
+                    incomingItem.StockIn -= stockReturnedDiff;
+                    _context.Update(incomingItem);
+
+                    // Get Data Incoming Item
+                    var item = await _context.Items.FindAsync(incomingItem.ItemId);
+                    if (item != null)
+                    {
+                        item.stock -= stockReturnedDiff;
+                        _context.Update(item);
+                    }
+
+                    // Update item returned
+                    _context.Update(itemReturned);
+
+                    // Save all changes in one transaction
+                    await _context.SaveChangesAsync();
+
+                    // Commit transaction
+                    await transaction.CommitAsync();
+
+                    return Json(new { success = true, message = "Data has been updated" });
+                }
+                catch (Exception ex)
                 {
-                    return Json(new { success = false, message = "Incoming item not found" });
+                    await transaction.RollbackAsync();
+                    return Json(new { success = false, message = "An error occurred: " + ex.Message });
                 }
-
-                // Check stok
-                if (itemReturned.StockReturned > incomingItem.StockIn)
-                {
-                    return Json(new { success = false, message = "Stock returned cannot be greater than available stock" });
-                }
-
-                // Calculate stock returned difference
-                int stockReturnedDiff = itemReturned.StockReturned - existingItem.StockReturned;
-
-                // Stock cannot be negative
-                if (incomingItem.StockIn - stockReturnedDiff < 0)
-                {
-                    return Json(new { success = false, message = "Stock cannot be negative" });
-                }
-
-                // Update stock incoming item
-                incomingItem.StockIn -= stockReturnedDiff;
-                _context.Update(incomingItem);
-
-                // Get Data Incoming Item
-                var item = await _context.Items.FindAsync(incomingItem.ItemId);
-                if (item != null)
-                {
-                    item.stock -= stockReturnedDiff;
-                    _context.Update(item);
-                }
-
-                // Save changes
-                await _context.SaveChangesAsync();
-
-                // Update item returned
-                _context.Update(itemReturned);
-                await _context.SaveChangesAsync();
-
-                return Json(new { success = true, message = "Data has been updated" });
             }
 
             ViewData["IncomingItemId"] = new SelectList(_context.IncomingItems, "Id", "Id", itemReturned.IncomingItemId);
             return Json(new { success = false, message = "Invalid data" });
         }
+
 
 
         // GET: ItemReturned/Delete/5

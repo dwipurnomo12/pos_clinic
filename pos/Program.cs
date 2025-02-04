@@ -1,7 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using pos.Database;
+using DinkToPdf;
+using DinkToPdf.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//Add DinkToPdf
+builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -12,6 +17,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

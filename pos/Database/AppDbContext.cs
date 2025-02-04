@@ -14,6 +14,8 @@ namespace pos.Database
         public DbSet<Supplier> Suppliers{ get; set; }
         public DbSet<IncomingItem> IncomingItems { get; set; }
         public DbSet<ItemReturned> ItemReturneds { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<TransactionDetail> TransactionDetails { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,0 +1,337 @@
+﻿@model List<pos.Models.IncomingItem>
+
+@{
+    ViewData["Title"] = "Transaction";
+}
+
+<div class="content-wrapper">
+    <div class="page-header">
+        <h3 class="page-title">
+            <span class="page-title-icon bg-gradient-primary text-white me-2">
+                <i class="mdi mdi-invoice-list-outline"></i>
+            </span>
+            Transaction
+        </h3>
+        <nav aria-label="breadcrumb">
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item active" aria-current="page">
+                    <span></span>Transaction
+                    <i class="mdi mdi-alert-circle-outline icon-sm text-primary align-middle"></i>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Item List</h4>
+                    <a href="javascript:void(0);" id="reset" class="btn btn-sm btn-danger float-end m-2"><i class="mdi mdi-refresh"></i> Reset Menu</a>
+                    <input type="text" id="search" class="form-control mt-2" placeholder="Search item" />
+                </div>
+                <div class="card-body">
+                    <div class="row" id="items-row">
+                        @foreach (var incomingItem in Model)
+                        {
+                            <div class="col-md-4 item-list">
+                                <div class="card mb-3 shadow-sm">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">@incomingItem.Item.Name</h5>
+                                        <p class="card-text">(@incomingItem.BatchNumber)</p>
+                                        <p class="card-text">Rp @incomingItem.Item.Price.ToString("N0")</p>
+                                        <button class="btn btn-success add-to-cart"
+                                                data-id="@incomingItem.Id"
+                                                data-name="@incomingItem.Item.Name"
+                                                data-price="@incomingItem.Item.Price">
+                                            <i class="mdi mdi-cart"></i> Add to cart
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Cart</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group" id="cart-list">
+                        <li class="list-group-item text-muted">Cart is empty</li>
+                    </ul>
+                    <hr>
+                    <h3 class="text-end">Total: Rp <span id="total-amount">0</span></h3>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4 class="card-title">Checkout</h4>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="CustomerId">Customer</label>
+                        <select asp-items="ViewBag.Customers" class="form-control js-example-basic-single" id="CustomerId" required>
+                            <option value=""> -- Select Customer -- </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="PaymentMethod" class="d-block mb-2">Payment Method</label>
+                        <div class="d-flex justify-content-left gap-4 ms-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="PaymentMethod" id="Cash" value="Cash">
+                                <label class="form-check-label" for="Cash">
+                                    Cash Payment
+                                </label>
+                            </div>
+                            <div class="form-check ms-3">
+                                <input class="form-check-input" type="radio" name="PaymentMethod" id="OnlinePayment" value="OnlinePayment">
+                                <label class="form-check-label" for="OnlinePayment">
+                                    Online Payment
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group>
+                                <label for="cashMoney" class="mb-2">Cash Money</label>
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Rp.</span>
+                                    <input type="number" class="form-control" id="cashMoney" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="changeMoney" class="mb-2">Change Money</label>
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Rp.</span>
+                                    <input type="number" class="form-control" id="changeMoney" disabled>
+                                    <div id="changeMoneyFormatted" class="input-group-text d-none"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary w-100" id="checkout-btn" disabled>Cash Payment</button>
+                    <button class="btn btn-success w-100 mt-2" id="online-payment" disabled>Online Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let cart = [];
+
+    //Add to cart 
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".add-to-cart").forEach(button => {
+            button.addEventListener("click", function () {
+                let id = this.getAttribute("data-id");
+                let name = this.getAttribute("data-name");
+                let price = parseFloat(this.getAttribute("data-price"));
+
+                let existingItem = cart.find(item => item.id === id);
+
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    cart.push({ id, name, price, quantity: 1 });
+                }
+
+                updateCart();
+            });
+        });
+
+        //Search item
+        document.getElementById("search").addEventListener("input", function () {
+            let query = this.value.toLowerCase();
+            let items = document.querySelectorAll(".item-list");
+
+            items.forEach(item => {
+                let name = item.querySelector(".card-title").innerText.toLowerCase();
+                let shouldShow = name.includes(query);
+
+                if (shouldShow) {
+                    item.style.display = "block";  
+                } else {
+                    item.style.display = "none";  
+                }
+            });
+        });
+
+
+    });
+
+    //Update cart
+    function updateCart() {
+        let cartList = document.getElementById("cart-list");
+        cartList.innerHTML = "";
+
+        if (cart.length === 0) {
+            cartList.innerHTML = '<li class="list-group-item text-muted">Cart is empty</li>';
+            document.getElementById("checkout-btn").disabled = true;
+        } else {
+            let total = 0;
+            cart.forEach((item, index) => {
+                let subtotal = item.price * item.quantity;
+                total += subtotal;
+
+                let listItem = document.createElement("li");
+                listItem.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+                listItem.innerHTML = `
+                    <span id="item-name">${item.name}</span>
+                    <span id="item-qty">X${item.quantity}</span> -
+                    <span id=item-subtotal>Rp.${subtotal.toLocaleString()}</span>
+
+                    <span id="item-price" style="display: none;">${item.price}</span>
+
+                    <button class="btn btn-danger btn-sm" onclick="removeFromCart(${index})">
+                        <i class="mdi mdi-trash-can"></i>
+                    </button>
+                `;
+
+                cartList.appendChild(listItem);
+            });
+
+            document.getElementById("total-amount").innerText = total.toLocaleString();
+            document.getElementById("checkout-btn").disabled = false;
+        }
+    }
+
+    // Checkout btn
+    document.getElementById("checkout-btn").addEventListener("click", function () {
+        let customerId      = document.getElementById("CustomerId").value;
+        let paymentMethod   = document.querySelector('input[name="PaymentMethod"]:checked');
+        let totalAmount     = document.getElementById("total-amount").innerText;
+        let cashMoney       = document.getElementById("cashMoney").value;
+        let changeMoney     = document.getElementById("changeMoney").value;
+
+        console.log(cashMoney, changeMoney);
+
+        if (customerId === "") {
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: "Select customer!",
+            });
+            return;
+        }
+        if (!paymentMethod) {
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: "Select payment method!",
+            });
+            return;
+        }
+        if (paymentMethod.value === "Cash" && cashMoney === "") {
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: "Input cash money!",
+            });
+            return;
+        }
+
+        let data = {
+            customerId,
+            totalAmount,
+            cashMoney,
+            changeMoney,    
+            paymentMethod: paymentMethod.value,
+            cartItems: cart.map(item => ({
+                itemName: item.name,
+                unitPrice: item.price,
+                quantity: item.quantity,
+                subtotal: item.price * item.quantity
+            }))
+        };
+        console.log(data);
+        let btn = $("#checkout-btn");
+        btn.prop("disabled", true).text("Processing...");
+
+          $.ajax({
+            url: "/Transaction/Checkout",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            success: function (response) {
+                if (response.success) {
+                    Swal.fire({ 
+                        icon: "success", 
+                        title: "Success!", 
+                        text: "Checkout successful!",
+                            didClose: () => {
+                            window.open(`/Transaction/GenerateReceipt?transactionId=${response.transactionId}&cashMoney=${cashMoney}&changeMoney=${changeMoney}`, "_blank");
+                        }
+                    });
+                    reset();
+                } else {
+                    Swal.fire({ 
+                        icon: "error", title: "Failed!", text: "Checkout failed!" });
+                }
+            },
+            error: function (xhr) {
+                console.error(xhr.responseText);
+                Swal.fire({ icon: "error", 
+                title: "Error!", 
+                text: "Something went wrong." });
+            },
+            complete: function () {
+                btn.prop("disabled", false).text("Checkout");
+            }
+        });
+    });
+
+    //Reset function
+    function reset() {
+        cart = [];
+        updateCart();
+        $("#CustomerId").val("");
+        $("input[name='PaymentMethod']").prop("checked", false);
+        $("#cashMoney").val("");
+        $("#total-amount").text("0");
+        $("#changeMoney").val("");
+    }
+
+    // Change Money
+    document.getElementById("cashMoney").addEventListener("input", function () {
+         let cashMoney   = parseFloat(this.value) || 0; 
+         let totalAmount = parseFloat(document.getElementById("total-amount").innerText.replace(/,/g, "")) || 0;
+         let changeMoney = cashMoney - totalAmount;
+
+         document.getElementById("changeMoney").value = changeMoney; 
+         document.getElementById("changeMoneyFormatted").innerText = changeMoney.toLocaleString("id-ID"); 
+     });
+
+    //Remove item in cart
+    function removeFromCart(index) {
+        cart.splice(index, 1);
+        updateCart();
+    }
+
+    //Select2
+    $(document).ready(function() {
+        $('.js-example-basic-single').select2({
+            width: '100%'
+        });
+    });
+
+    //Reset Menu
+    document.getElementById("reset").addEventListener("click", function () {
+    reset();
+    Swal.fire({
+         icon: "success",
+         title: "Success!",
+         text: "Reset Transaction Menu has been successfuly!" });
+    });
+</script>
