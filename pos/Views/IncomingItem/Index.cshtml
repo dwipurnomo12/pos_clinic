@@ -48,6 +48,7 @@
                                     <th class="text-start">@Html.DisplayName("Date")</th>
                                     <th class="text-start">@Html.DisplayName("Item Name")</th>
                                     <th class="text-start">@Html.DisplayName("Stock In")</th>
+                                    <th class="text-start">@Html.DisplayName("Total Purchase")</th>
                                     <th class="text-start">@Html.DisplayName("ExpiredDate")</th>
                                     <th class="text-start">@Html.DisplayName("Supplier")</th>
                                     <th class="text-start">@Html.DisplayName("Options")</th>
@@ -68,6 +69,11 @@
         // Initialize DataTable
         let table = $('#table_id').DataTable();
 
+        // Format  rupiah price
+        function formatRupiah(number){
+            return 'Rp. ' + number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
         // Function to load and populate the DataTable
         function loadDataTable() {
             $.ajax({
@@ -84,7 +90,8 @@
                                 <td class="text-start">${value.batchNumber}</td>
                                 <td class="text-start">${new Date(value.dateOfEntry).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
                                 <td class="text-start">${value.itemName}</td>
-                                <td class="text-start">${value.stockIn}</td>
+                                <td class="text-start">${value.stockIn} ${value.itemUnit}</td>
+                                <td class="text-start">${formatRupiah(value.totalPurchase)}</td>
                                 <td class="text-start">${new Date(value.expiredDate).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
                                 <td class="text-start">${value.supplierName}</td>
                                 <td class="text-start">
@@ -110,6 +117,7 @@
         function clearForm() {
             $('#StockIn').val('');
             $('#ExpiredDate').val('');
+            $('#TotalPurchase').val('');
             $('#ItemId').val('');
             $('#SupplierId').val('');
         }
@@ -126,12 +134,14 @@
 
             let StockIn = $('#StockIn').val();
             let ExpiredDate = $('#ExpiredDate').val();
+            let TotalPurchase = $('#TotalPurchase').val();
             let ItemId = $('#ItemId').val();
             let SupplierId = $('#SupplierId').val();
             let formData = new FormData();
 
             formData.append('StockIn', StockIn);
             formData.append('ExpiredDate', ExpiredDate);
+            formData.append('TotalPurchase', TotalPurchase);
             formData.append('ItemId', ItemId);
             formData.append('SupplierId', SupplierId);
             formData.append('__RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());
@@ -181,6 +191,7 @@
                     $('#incomingItem_id').val(response.data.id);
                     $('#StockIn_edit').val(response.data.stockIn);
                     $('#ExpiredDate_edit').val(response.data.expiredDate);
+                    $('#TotalPurchase_edit').val(response.data.totalPurchase);
                     $("#ItemId_edit").val(response.data.itemId).change();
                     $("#SupplierId_edit").val(response.data.supplierId).change();
                 }
@@ -194,6 +205,7 @@
             let id = $('#incomingItem_id').val();
             let StockIn = $('#StockIn_edit').val();
             let ExpiredDate = $('#ExpiredDate_edit').val();
+            let TotalPurchase = $('#TotalPurchase_edit').val();
             let ItemId = $('#ItemId_edit').val();
             let SupplierId = $('#SupplierId_edit').val();
             let formData = new FormData();
@@ -201,6 +213,7 @@
             formData.append('id', id);
             formData.append('StockIn', StockIn);
             formData.append('ExpiredDate', ExpiredDate);
+            formData.append('TotalPurchase', TotalPurchase);
             formData.append('ItemId', ItemId);
             formData.append('SupplierId', SupplierId);
             formData.append('__RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());

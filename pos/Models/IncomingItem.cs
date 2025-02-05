@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace pos.Models
@@ -29,5 +30,9 @@ namespace pos.Models
         [Required]
         public int SupplierId { get; set; }
         public Supplier? Supplier { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? TotalPurchase { get; set; }
     }
 }

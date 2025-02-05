@@ -18,7 +18,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="ItemId">Item</label>
-                                <select asp-for="ItemId" asp-items="ViewBag.items" id="ItemId" class="form-control" style="width:100%" required>
+                                <select asp-for="ItemId" asp-items="ViewBag.items" id="ItemId" class="form-control" required>
                                     <option value=""> -- Select Item -- </option>
                                 </select>
                             </div>
@@ -34,6 +34,13 @@
                     <div class="form-group">
                         <label for="ExpiredDate">Expired Date</label>
                         <input type="date" class="form-control" id="ExpiredDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="Total Purchase">Total Purchase</label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="basic-addon1">Rp.</span>
+                            <input type="number" class="form-control" id="TotalPurchase" aria-label="TotalPurchase" aria-describedby="basic-addon1">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="SupplierId">Supplier</label>

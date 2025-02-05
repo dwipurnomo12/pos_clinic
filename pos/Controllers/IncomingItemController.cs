@@ -35,7 +35,9 @@ namespace pos.Controllers
                     batchNumber = i.BatchNumber,
                     stockIn = i.StockIn,
                     expiredDate = i.ExpiredDate.ToString("yyyy-MM-dd"),
+                    totalPurchase = i.TotalPurchase,
                     ItemName = i.Item.Name,
+                    ItemUnit = i.Item.Unit.Name,
                     SupplierName = i.Supplier.Name
                 })
                 .ToListAsync();
@@ -66,7 +68,7 @@ namespace pos.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,DateOfEntry,TransactionCode,BatchNumber,StockIn,ExpiredDate,ItemId,SupplierId")] IncomingItem incomingItem)
+        public async Task<IActionResult> Create([Bind("Id,DateOfEntry,TransactionCode,BatchNumber,StockIn,ExpiredDate,TotalPurchase,ItemId,SupplierId")] IncomingItem incomingItem)
         {
             if (ModelState.IsValid)
             {
@@ -149,7 +151,7 @@ namespace pos.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,StockIn,ExpiredDate,ItemId,SupplierId,DateOfEntry,TransactionCode,BatchNumber")] IncomingItem incomingItem)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,StockIn,ExpiredDate,ItemId,SupplierId,DateOfEntry,TotalPurchase,TransactionCode,BatchNumber")] IncomingItem incomingItem)
         {
             if (id != incomingItem.Id)
             {

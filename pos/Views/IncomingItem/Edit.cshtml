@@ -37,6 +37,13 @@
                         <input type="date" class="form-control" id="ExpiredDate_edit" required>
                     </div>
                     <div class="form-group">
+                        <label for="Total Purchase">Total Purchase</label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="basic-addon1">Rp.</span>
+                            <input type="number" class="form-control" id="TotalPurchase_edit" aria-label="TotalPurchase" aria-describedby="basic-addon1">
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="SupplierId">Supplier</label>
                         <select asp-for="SupplierId" asp-items="ViewBag.suppliers" id="SupplierId_edit" class="form-control" required>
                             <option value=""> -- Select Supplier -- </option>

@@ -259,7 +259,7 @@ namespace pos.Controllers
 
                     <div class='line'></div>
 
-                    <p>Terimakasih Telah Berbelanja</p>
+                    <p>Thankyou for your order</p>
                 </div>
             </body>
             </html>");

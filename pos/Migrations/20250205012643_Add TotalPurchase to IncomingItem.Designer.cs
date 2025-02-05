@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using pos.Database;
 
@@ -11,9 +12,11 @@ using pos.Database;
 namespace pos.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250205012643_Add TotalPurchase to IncomingItem")]
+    partial class AddTotalPurchasetoIncomingItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,53 +59,6 @@ namespace pos.Migrations
                     b.ToTable("Customers");
                 });
 
-            modelBuilder.Entity("pos.Models.Finance", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Nominal")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Finances");
-                });
-
-            modelBuilder.Entity("pos.Models.FinancialHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("FinanceId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("FinanceStatus")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("TransactionDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FinanceId");
-
-                    b.ToTable("FinancialHistories");
-                });
-
             modelBuilder.Entity("pos.Models.IncomingItem", b =>
                 {
                     b.Property<int>("Id")
@@ -129,7 +85,7 @@ namespace pos.Migrations
                     b.Property<int>("SupplierId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TotalPurchase")
+                    b.Property<decimal?>("TotalPurchase")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("TransactionCode")
@@ -311,13 +267,6 @@ namespace pos.Migrations
                     b.ToTable("Units");
                 });
 
-            modelBuilder.Entity("pos.Models.FinancialHistory", b =>
-                {
-                    b.HasOne("pos.Models.Finance", null)
-                        .WithMany("FinancialHistories")
-                        .HasForeignKey("FinanceId");
-                });
-
             modelBuilder.Entity("pos.Models.IncomingItem", b =>
                 {
                     b.HasOne("pos.Models.Item", "Item")
@@ -387,11 +336,6 @@ namespace pos.Migrations
                         .IsRequired();
 
                     b.Navigation("Transaction");
-                });
-
-            modelBuilder.Entity("pos.Models.Finance", b =>
-                {
-                    b.Navigation("FinancialHistories");
                 });
 
             modelBuilder.Entity("pos.Models.Item", b =>

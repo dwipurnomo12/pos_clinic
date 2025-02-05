@@ -1,0 +1,70 @@
+﻿@model List<pos.Models.Finance>
+@{
+    ViewData["Title"] = "Finance";
+}
+
+
+<div class="content-wrapper">
+    <div class="page-header">
+        <h3 class="page-title">
+            <span class="page-title-icon bg-gradient-primary text-white me-2">
+                <i class="mdi mdi-shape"></i>
+            </span>
+            Finance
+        </h3>
+        <nav aria-label="breadcrumb">
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item active" aria-current="page">
+                    <span></span>Finance
+                    <i class="mdi mdi-alert-circle-outline icon-sm text-primary align-middle"></i>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                     <h4 class="card-title">Finance</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                         <div class="col-md-4 stretch-card grid-margin">
+                            <div class="card bg-gradient-primary card-img-holder text-white">
+                                <div class="card-body">
+                                    <h4 class="font-weight-normal mb-3">
+                                        Balance <i class="mdi mdi-chart-line mdi-24px float-end"></i>
+                                    </h4>
+                                    <h2 class="mb-5">Rp. @ViewBag.finance</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 stretch-card grid-margin">
+                            <div class="card bg-gradient-success card-img-holder text-white">
+                                <div class="card-body">
+                                    <h4 class="font-weight-normal mb-3">
+                                        Income <i class="mdi mdi-cash-fast mdi-24px float-end"></i>
+                                    </h4>
+                                    <h2 class="mb-5">Rp. @ViewBag.Income</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 stretch-card grid-margin">
+                            <div class="card bg-gradient-danger card-img-holder text-white">
+                                <div class="card-body">
+                                    <h4 class="font-weight-normal mb-3">
+                                        Expense <i class="mdi mdi-cash-minus mdi-24px float-end"></i>
+                                    </h4>
+                                    <h2 class="mb-5">Rp. @ViewBag.Expense</h2>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -73,6 +73,26 @@
             </div>
         </li>
         <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#finance" aria-expanded="false" aria-controls="transaction">
+                <span class="menu-title">Finance</span>
+                <i class="menu-arrow"></i>
+                <i class="mdi mdi-finance menu-icon"></i>
+            </a>
+            <div class="collapse" id="finance">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Finance" asp-action="index">Finance Balance</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="pages/ui-features/dropdowns.html">Income </a>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link" href="pages/ui-features/dropdowns.html">Expense </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#report" aria-expanded="false" aria-controls="report">
                 <span class="menu-title">Report</span>
                 <i class="menu-arrow"></i>
