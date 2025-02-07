@@ -21,10 +21,18 @@ namespace pos.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // add relation one to many item to incoming item
             modelBuilder.Entity<IncomingItem>()
                 .HasOne(i => i.Item)
                 .WithMany(i => i.IncomingItems)
                 .HasForeignKey(i => i.ItemId);
+
+            // add default data for finance
+            modelBuilder.Entity<Finance>().HasData(new Finance
+            {
+                Id = 1,
+                Nominal = 0,
+            });
 
             base.OnModelCreating(modelBuilder);
         }

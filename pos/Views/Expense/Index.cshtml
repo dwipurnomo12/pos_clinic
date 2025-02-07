@@ -1,9 +1,9 @@
 ﻿@model List<pos.Models.FinancialHistory>
 @{
-    ViewData["Title"] = "List Income";
+    ViewData["Title"] = "List Expense";
 }
 
-@Html.Partial("/Views/Income/Create.cshtml")
+@Html.Partial("/Views/Expense/Create.cshtml")
 
 <div class="content-wrapper">
     <div class="page-header">
@@ -11,12 +11,12 @@
             <span class="page-title-icon bg-gradient-primary text-white me-2">
                 <i class="mdi mdi-invoice-list-outline"></i>
             </span>
-            Income
+            Expense
         </h3>
         <nav aria-label="breadcrumb">
             <ul class="breadcrumb">
                 <li class="breadcrumb-item active" aria-current="page">
-                    <span></span>Income
+                    <span></span>Expense
                     <i class="mdi mdi-alert-circle-outline icon-sm text-primary align-middle"></i>
                 </li>
             </ul>
@@ -32,7 +32,7 @@
                             <h4 class="card-title">Item List</h4>
                         </div>
                         <div class="col-md-6">
-                            <a id="btn_add_income" class="btn btn-primary float-end">Add Data</a>
+                            <a id="btn_add_expense" class="btn btn-primary float-end">Add Data</a>
                         </div>
                     </div>
                 </div>
@@ -72,15 +72,15 @@
         // Function to load and populate the DataTable
         function loadDataTable() {
             $.ajax({
-                url: "Income/GetIncome",
+                url: "Expense/GetExpense",
                 type: "GET",
                 dataType: "JSON",
                 success: function (response) {
                     table.clear(); // Clear existing rows
                     $.each(response.data, function (key, value) {
-                        let statusBadge = value.financeStatus === "In"
-                            ? `<span class="badge bg-success">Income</span>`
-                            : `<span class="badge bg-danger">Expense</span>`;
+                        let statusBadge = value.financeStatus === "Out"
+                            ? `<span class="badge bg-danger">Expense</span>`
+                            : `<span class="badge bg-success">Income</span>`;
 
                         let data = `
                             <tr class="data-row" id="index_${value.id}">
@@ -90,7 +90,7 @@
                                 <td class="text-start">${statusBadge}</td>
                                 <td class="text-start">${value.description}</td>
                                 <td class="text-start">
-                                    <a href="javascript:void(0)" id="btn_delete_income" data-id="${value.id}" class="btn btn-danger btn-icon pt-2">
+                                    <a href="javascript:void(0)" id="btn_delete_expense" data-id="${value.id}" class="btn btn-danger btn-icon pt-2">
                                         <i class="mdi mdi-delete-outline"></i>
                                     </a>
                                 </td>
@@ -112,13 +112,13 @@
             $('#Description').val('');
         }
 
-        // Show modal to add a new income
-        $('body').on('click', '#btn_add_income', function () {
-            $('#modal_add_income').modal('show');
+        // Show modal to add a new expense
+        $('body').on('click', '#btn_add_expense', function () {
+            $('#modal_add_expense').modal('show');
             clearForm();
         });
 
-        // Add a new income
+        // Add a new espense
         $('#Store').click(function (e) {
             e.preventDefault();
 
@@ -133,7 +133,7 @@
             formData.append('__RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());
 
             $.ajax({
-                url: '/Income/Create',
+                url: '/Expense/Create',
                 type: "POST",
                 cache: false,
                 data: formData,
@@ -148,7 +148,7 @@
                             timer: 3000
                         });
 
-                        $('#modal_add_income').modal('hide'); // Hide modal
+                        $('#modal_add_expense').modal('hide'); // Hide modal
                         loadDataTable(); // Reload data
                     } else {
                         Swal.fire({
@@ -161,8 +161,10 @@
             });
         });
 
+
+
         // Delete a data
-        $('body').on('click', '#btn_delete_income', function () {
+        $('body').on('click', '#btn_delete_expense', function () {
             let id = $(this).data('id');
 
             Swal.fire({
@@ -176,7 +178,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/Income/Delete',
+                        url: '/Expense/Delete',
                         type: 'POST',
                         data: { id: id },
                         success: function (response) {

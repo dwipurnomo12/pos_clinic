@@ -25,5 +25,9 @@ namespace pos.Models
 
         [Required]
         public string Description { get; set; }
+
+        [Required]
+        public int FinanceId { get; set; }
+        public Finance? Finance { get; set; }
     }
 }
