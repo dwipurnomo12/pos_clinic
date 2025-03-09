@@ -70,63 +70,91 @@ namespace pos.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,DateOfEntry,TransactionCode,BatchNumber,StockIn,ExpiredDate,TotalPurchase,ItemId,SupplierId")] IncomingItem incomingItem)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                return Json(new { success = false, message = errors });
+            }
+
+            // Mulai transaksi
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
                 // Generate Transaction Code
                 var random = new Random();
                 int randomNumber = random.Next(10000, 99999);
                 incomingItem.TransactionCode = "INC-" + randomNumber;
 
-                // Date now
+                // Set DateOfEntry ke waktu saat ini
                 var dateNow = DateTime.Now;
                 incomingItem.DateOfEntry = dateNow;
 
-                // Get last batch number
+                // Ambil batch number terakhir untuk ItemId terkait
                 var lastBatch = await _context.IncomingItems
-                    .Where(i => i.ItemId == incomingItem.ItemId) // Filter by itemId
+                    .Where(i => i.ItemId == incomingItem.ItemId)
                     .OrderByDescending(i => i.BatchNumber)
                     .Select(i => i.BatchNumber)
                     .FirstOrDefaultAsync();
 
+                // Tentukan batch number berikutnya
                 int nextBatchNumber = 1;
-
-                // if last batch is not null and start with "Batch"
                 if (!string.IsNullOrEmpty(lastBatch) && lastBatch.StartsWith("Batch"))
                 {
-                    // Get last batch number
-                    string lastBatchNumStr = lastBatch.Replace("Batch", "");
-
-                    if (int.TryParse(lastBatchNumStr, out int lastBatchNum))
+                    if (int.TryParse(lastBatch.Replace("Batch", ""), out int lastBatchNum))
                     {
-                        nextBatchNumber = lastBatchNum + 1; // Add 1 to the last batch number
+                        nextBatchNumber = lastBatchNum + 1;
                     }
                 }
-
-                // Format batch number 
                 incomingItem.BatchNumber = "Batch" + nextBatchNumber.ToString("D4");
 
-                //Update stock in Item
+                // Update stok item
                 var item = await _context.Items.FindAsync(incomingItem.ItemId);
-                if(item != null)
+                if (item == null)
                 {
-                    item.stock += incomingItem.StockIn;
-                    _context.Update(item);
-                    await _context.SaveChangesAsync();
+                    return Json(new { success = false, message = "Item not found!" });
+                }
+                item.stock += incomingItem.StockIn;
+                _context.Update(item);
+
+                // Cek keuangan
+                var finance = await _context.Finances.FirstOrDefaultAsync();
+                if (finance == null || finance.Nominal < (incomingItem.TotalPurchase ?? 0))
+                {
+                    return Json(new { success = false, message = "Finance nominal is not enough!" });
                 }
 
-                // Save to database
+                // Kurangi saldo keuangan
+                finance.Nominal -= incomingItem.TotalPurchase ?? 0;
+                _context.Update(finance);
+
+                // Tambahkan ke riwayat keuangan
+                var expense = new FinancialHistory
+                {
+                    FinanceId = finance.Id,
+                    TransactionDate = dateNow,
+                    Amount = incomingItem.TotalPurchase ?? 0,
+                    FinanceStatus = FinanceStatus.Out,
+                    Description = "Purchase Item " + item.Name
+                };
+                _context.Add(expense);
+
+                // Simpan semua perubahan dalam satu transaksi
                 _context.Add(incomingItem);
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, message = "Data has been saved" });
+                // Commit transaksi jika semua sukses
+                await transaction.CommitAsync();
+
+                return Json(new { success = true, message = "Data has been saved successfully!" });
             }
-
-            ViewData["ItemId"] = new SelectList(_context.Items, "Id", "Name", incomingItem.ItemId);
-            ViewData["SupplierId"] = new SelectList(_context.Suppliers, "Id", "Name", incomingItem.SupplierId);
-
-            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-            return Json(new { success = false, message = errors });
+            catch (Exception ex)
+            {
+                // Rollback jika ada error
+                await transaction.RollbackAsync();
+                return Json(new { success = false, message = "Error: " + ex.Message });
+            }
         }
+
 
         // GET: IncomingItem/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -160,45 +188,88 @@ namespace pos.Controllers
 
             if (ModelState.IsValid)
             {
-                var existingItem = await _context.IncomingItems.AsNoTracking().FirstOrDefaultAsync(i => i.Id == id);
-                if (existingItem == null)
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    return NotFound();
-                }
+                    var existingItem = await _context.IncomingItems.AsNoTracking().FirstOrDefaultAsync(i => i.Id == id);
+                    if (existingItem == null)
+                    {
+                        return NotFound();
+                    }
 
-                // Update DateOfEntry, TransactionCode, and BatchNumber from the existing item
-                incomingItem.DateOfEntry = existingItem.DateOfEntry;
-                incomingItem.TransactionCode = existingItem.TransactionCode;
-                incomingItem.BatchNumber = existingItem.BatchNumber;
+                    incomingItem.DateOfEntry = existingItem.DateOfEntry;
+                    incomingItem.TransactionCode = existingItem.TransactionCode;
+                    incomingItem.BatchNumber = existingItem.BatchNumber;
 
-                // Calculate the difference of stock in
-                int stockInDiff = incomingItem.StockIn - existingItem.StockIn;
+                    int stockInDiff = incomingItem.StockIn - existingItem.StockIn;
 
-                // Update the item stock
-                var item = await _context.Items.FindAsync(incomingItem.ItemId);
-                if (item != null)
-                {
+                    var item = await _context.Items.FindAsync(incomingItem.ItemId);
+                    if (item == null)
+                    {
+                        return NotFound();
+                    }
                     item.stock += stockInDiff;
                     _context.Update(item);
-                    await _context.SaveChangesAsync(); // Save item update
 
-                    // Update incoming item
+                    decimal totalPurchaseDiff = (incomingItem.TotalPurchase ?? 0) - (existingItem.TotalPurchase ?? 0);
+
+                    var finance = await _context.Finances.FirstOrDefaultAsync();
+                    if (finance == null)
+                    {
+                        return Json(new { success = false, message = "Finance data not found!" });
+                    }
+
+                    if (totalPurchaseDiff > 0 && finance.Nominal < totalPurchaseDiff)
+                    {
+                        return Json(new { success = false, message = "Finance nominal is not enough to cover the update!" });
+                    }
+
+                    finance.Nominal -= totalPurchaseDiff;
+                    _context.Update(finance);
+
+                    if (totalPurchaseDiff != 0)
+                    {
+                        var expense = await _context.FinancialHistories
+                            .FirstOrDefaultAsync(f => f.FinanceId == finance.Id && f.TransactionDate == existingItem.DateOfEntry);
+
+                        if (expense != null)
+                        {
+                            expense.Amount += totalPurchaseDiff;
+                            _context.Update(expense);
+                        }
+                        else
+                        {
+                            var newExpense = new FinancialHistory
+                            {
+                                FinanceId = finance.Id,
+                                TransactionDate = existingItem.DateOfEntry,
+                                Amount = incomingItem.TotalPurchase ?? 0,
+                                FinanceStatus = FinanceStatus.Out,
+                                Description = "Updated Purchase of Item " + (item != null ? item.Name : "Unknown Item")
+                            };
+                            _context.Add(newExpense);
+                        }
+                    }
+
                     _context.Update(incomingItem);
-                    await _context.SaveChangesAsync(); // Save incoming item update
-                }
-                else
-                {
-                    return NotFound(); // Item not found
-                }
 
-                return Json(new { success = true, message = "Incoming Item updated successfully!" });
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return Json(new { success = true, message = "Incoming Item updated successfully!" });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync(); 
+                    return Json(new { success = false, message = "An error occurred: " + ex.Message });
+                }
             }
 
-            // If model state is invalid, return errors
-            ViewData["ItemId"] = new SelectList(_context.Items, "Id", "Name", incomingItem.ItemId);
-            ViewData["SupplierId"] = new SelectList(_context.Suppliers, "Id", "Name", incomingItem.SupplierId);
-            return Json(new { success = false, message = "Invalid data submitted" });
+            // Jika ModelState tidak valid, kembalikan error
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+            return Json(new { success = false, message = errors });
         }
+
 
         // GET: IncomingItem/Delete/5
         public async Task<IActionResult> Delete(int? id)

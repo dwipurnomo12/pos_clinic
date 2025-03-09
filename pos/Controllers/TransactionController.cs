@@ -63,27 +63,29 @@ namespace pos.Controllers
         [Route("Checkout")]
         public async Task<IActionResult> Checkout([FromBody] CheckoutRequest request)
         {
-            using var transactionScope = await _context.Database.BeginTransactionAsync();
-
+            await using var transactionScope = await _context.Database.BeginTransactionAsync();
             try
             {
-                // Create transaction
+                if (!decimal.TryParse(request.TotalAmount, out decimal totalAmount))
+                {
+                    throw new Exception("Invalid total amount format.");
+                }
+
                 var transaction = new Transaction
                 {
                     CustomerId = request.CustomerId,
                     TransactionCode = $"INV-{new Random().Next(10000, 99999)}",
-                    TotalAmount = decimal.Parse(request.TotalAmount),
-                    PaymentMethod = (PaymentMethod)Enum.Parse(typeof(PaymentMethod), request.PaymentMethod),
+                    TotalAmount = totalAmount,
+                    PaymentMethod = Enum.TryParse(request.PaymentMethod, out PaymentMethod paymentMethod) ? paymentMethod : throw new Exception("Invalid payment method."),
                     TransactionDate = DateTime.Now,
                     Status = TransactionStatus.Completed,
                 };
 
-                _context.Transactions.Add(transaction);
+                await _context.Transactions.AddAsync(transaction);
                 await _context.SaveChangesAsync();
 
                 var transactionDetails = new List<TransactionDetail>();
 
-                // Update stock in IncomingItems
                 foreach (var item in request.CartItems)
                 {
                     var incomingItem = await _context.IncomingItems
@@ -91,63 +93,76 @@ namespace pos.Controllers
                         .OrderBy(i => i.DateOfEntry)
                         .ThenBy(i => i.ExpiredDate)
                         .FirstOrDefaultAsync();
-                    if (incomingItem != null && incomingItem.StockIn >= item.Quantity)
+
+                    if (incomingItem == null || incomingItem.StockIn < item.Quantity)
                     {
-                        incomingItem.StockIn -= item.Quantity;
-                        _context.IncomingItems.Update(incomingItem);
-                    }
-                    else
-                    {
-                        throw new Exception($"Something when wrong");
+                        throw new Exception($"Insufficient stock for item: {item.ItemName}");
                     }
 
-                    var transactionDetail = new TransactionDetail
+                    incomingItem.StockIn -= item.Quantity;
+                    _context.IncomingItems.Update(incomingItem);
+
+                    transactionDetails.Add(new TransactionDetail
                     {
                         TransactionId = transaction.Id,
                         ItemName = item.ItemName,
                         Quantity = item.Quantity,
                         UnitPrice = item.UnitPrice,
                         Subtotal = item.SubTotal,
-                    };
-                    transactionDetails.Add(transactionDetail);
+                    });
                 }
 
-                // Update stock in Items
                 foreach (var item in request.CartItems)
                 {
-                    var itemDb = await _context.Items
-                        .Where(i => i.Name == item.ItemName)
-                        .FirstOrDefaultAsync();
-                    if (itemDb != null && itemDb.stock >= item.Quantity)
+                    var itemDb = await _context.Items.FirstOrDefaultAsync(i => i.Name == item.ItemName);
+                    if (itemDb == null || itemDb.stock < item.Quantity)
                     {
-                        itemDb.stock -= item.Quantity;
-                        _context.Items.Update(itemDb);
+                        throw new Exception($"Insufficient stock in main inventory for item: {item.ItemName}");
                     }
-                    else
-                    {
-                        throw new Exception($"Something when wrong");
-                    }
+
+                    itemDb.stock -= item.Quantity;
+                    _context.Items.Update(itemDb);
                 }
 
-                _context.TransactionDetails.AddRange(transactionDetails);
+                var finance = await _context.Finances.FirstOrDefaultAsync();
+                if (finance == null)
+                {
+                    throw new Exception("Finance data not found.");
+                }
+
+                finance.Nominal += transaction.TotalAmount;
+                _context.Finances.Update(finance);
+
+                var financialHistory = new FinancialHistory
+                {
+                    FinanceId = finance.Id,
+                    TransactionDate = transaction.TransactionDate,
+                    Amount = transaction.TotalAmount,
+                    FinanceStatus = FinanceStatus.In,
+                    Description = "Transaction of Item",
+                };
+
+                await _context.FinancialHistories.AddAsync(financialHistory);
+                await _context.TransactionDetails.AddRangeAsync(transactionDetails);
                 await _context.SaveChangesAsync();
 
-                // Commit transaction when success
                 await transactionScope.CommitAsync();
 
                 return Json(new { success = true, transactionId = transaction.Id });
             }
             catch (Exception ex)
             {
-                var errorMessage = ex.Message;
+                await transactionScope.RollbackAsync();
+                var errorMessage = $"Error: {ex.Message}";
                 if (ex.InnerException != null)
                 {
-                    errorMessage += " Inner exception: " + ex.InnerException.Message;
+                    errorMessage += $" | Inner Exception: {ex.InnerException.Message}";
                 }
+
                 return Json(new { success = false, message = errorMessage });
             }
-
         }
+
 
         [HttpGet("GenerateReceipt")]
         public async Task<IActionResult> GenerateReceipt([FromQuery] int transactionId, [FromQuery] decimal cashMoney, [FromQuery] decimal changeMoney)
