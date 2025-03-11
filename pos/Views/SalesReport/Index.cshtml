@@ -1,6 +1,6 @@
-﻿@model List<pos.Models.IncomingItem>
+﻿@model List<pos.Models.Transaction>
 @{
-    ViewData["Title"] = "Purchase Item Report";
+    ViewData["Title"] = "Sales Report";
 }
 
 <div class="content-wrapper">
@@ -9,12 +9,12 @@
             <span class="page-title-icon bg-gradient-primary text-white me-2">
                 <i class="mdi mdi-invoice-list-outline"></i>
             </span>
-            Purchase Report
+            Sales Report
         </h3>
         <nav aria-label="breadcrumb">
             <ul class="breadcrumb">
                 <li class="breadcrumb-item active" aria-current="page">
-                    <span></span>Purchase Item Report
+                    <span></span>Sales Report
                     <i class="mdi mdi-alert-circle-outline icon-sm text-primary align-middle"></i>
                 </li>
             </ul>
@@ -27,10 +27,10 @@
                 <div class="card-header">
                     <div class="row">
                         <div class="col-md-6">
-                            <h4 class="card-title">Purchase Item Report</h4>
+                            <h4 class="card-title">Sales Report</h4>
                         </div>
                         <div class="col-md-6">
-                            <a id="PurchaseReportPrint" class="btn btn-danger float-end">Print Report</a>
+                            <a id="SalesReportPrint" class="btn btn-danger float-end">Print Report</a>
                         </div>
                     </div>
                 </div>
@@ -59,13 +59,10 @@
                                 <tr>
                                     <th class="text-start">@Html.DisplayName("#")</th>
                                     <th class="text-start">@Html.DisplayName("Transaction Code")</th>
-                                    <th class="text-start">@Html.DisplayName("Batch Number")</th>
                                     <th class="text-start">@Html.DisplayName("Date")</th>
-                                    <th class="text-start">@Html.DisplayName("Item Name")</th>
-                                    <th class="text-start">@Html.DisplayName("Stock In")</th>
-                                    <th class="text-start">@Html.DisplayName("Total Purchase")</th>
-                                    <th class="text-start">@Html.DisplayName("Expired Date")</th>
-                                    <th class="text-start">@Html.DisplayName("Supplier")</th>
+                                    <th class="text-start">@Html.DisplayName("Total Amount")</th>
+                                    <th class="text-start">@Html.DisplayName("Payment Method")</th>
+                                    <th class="text-start">@Html.DisplayName("Customer")</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -82,11 +79,11 @@
     $(document).ready(function () {
         let table = $('#table_id').DataTable();
 
-        // Load DataTable 
+        // Load DataTable
         loadDataTable();
 
         $('#filter_form').on('submit', function (e) {
-            e.preventDefault();  
+            e.preventDefault();
 
             let startDate = $('#start_date').val();
             let endDate = $('#end_date').val();
@@ -108,7 +105,7 @@
 
         function loadDataTable(startDate = '', endDate = '') {
             $.ajax({
-                url: "PurchaseReport/GetPurchaseReport",
+                url: "SalesReport/GetSalesReport",
                 type: "GET",
                 data: { start_date: startDate, end_date: endDate },
                 dataType: "JSON",
@@ -119,13 +116,10 @@
                             <tr>
                                 <td class="text-start">${key + 1}</td>
                                 <td class="text-start">${value.transactionCode}</td>
-                                <td class="text-start">${value.batchNumber}</td>
-                                <td class="text-start">${new Date(value.dateOfEntry).toLocaleDateString('id-ID')}</td>
-                                <td class="text-start">${value.itemName}</td>
-                                <td class="text-start">${value.stockIn} ${value.itemUnit}</td>
-                                <td class="text-start">Rp. ${value.totalPurchase.toLocaleString('id-ID')}</td>
-                                <td class="text-start">${new Date(value.expiredDate).toLocaleDateString('id-ID')}</td>
-                                <td class="text-start">${value.supplierName}</td>
+                                <td class="text-start">${new Date(value.transactionDate).toLocaleDateString('id-ID')}</td>
+                                <td class="text-start">Rp. ${value.totalAmount.toLocaleString('id-ID')}</td>
+                                 <td class="text-start">${value.paymentMethod}</td>
+                                <td class="text-start">${value.customerName}</td>
                             </tr>
                         `;
                         table.row.add($(data)).draw(false);
@@ -141,7 +135,7 @@
         });
 
         //print purchase report
-        document.getElementById('PurchaseReportPrint').addEventListener('click', function () {
+        document.getElementById('SalesReportPrint').addEventListener('click', function () {
             var startDate = document.getElementById('start_date').value;
             var endDate = document.getElementById('end_date').value;
 
@@ -156,7 +150,7 @@
                 });
                 return;
             }
-            var url = `/PurchaseReport/GetPdf?start_date=${startDate}&end_date=${endDate}`;
+            var url = `/SalesReport/GetPdf?start_date=${startDate}&end_date=${endDate}`;
             window.location.href = url;
         });
     });

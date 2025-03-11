@@ -69,7 +69,7 @@ namespace pos.Controllers
         }
 
         // Print PDF
-    public async Task<IActionResult> GetPdf([FromQuery] DateTime? start_date, [FromQuery] DateTime? end_date)
+        public async Task<IActionResult> GetPdf([FromQuery] DateTime? start_date, [FromQuery] DateTime? end_date)
         {
             // Query data langsung dengan filtering di database
             var query = _context.IncomingItems
