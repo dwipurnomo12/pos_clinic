@@ -36,6 +36,7 @@ namespace pos.Controllers
             }
             var transactions = await query
                 .OrderByDescending(i => i.Id)
+                .Where(i => i.Status == TransactionStatus.Completed)
                 .Select(i => new
                 {
                     i.Id,

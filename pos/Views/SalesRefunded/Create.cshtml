@@ -1,0 +1,47 @@
+﻿@model pos.Models.SalesRefunded
+@{
+    ViewData["Title"] = "Add Sales Refunded ";
+}
+
+<!-- Modal -->
+<div class="modal fade" id="modal_add_sales_refunded" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Add new sales refunded</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="TransactionId">Transaction</label>
+                                <select asp-for="TransactionId" asp-items="ViewBag.Transactions" id="TransactionId" class="form-control" style="width:100%" required>
+                                    <option value=""> -- Select Item -- </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="StockReturned">Stock Returned</label>
+                                <input type="number" class="form-control" id="StockReturned" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Information">Information</label>
+                        <input type="text" class="form-control" id="Information" required>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="Store" class="btn btn-gradient-primary me-2">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

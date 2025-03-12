@@ -2,7 +2,7 @@
 
 namespace pos.Controllers
 {
-    public class ItemExpiredController : Controller
+    public class SalesRefundReportController : Controller
     {
         public IActionResult Index()
         {

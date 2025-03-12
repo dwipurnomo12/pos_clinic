@@ -18,6 +18,7 @@ namespace pos.Database
         public DbSet<TransactionDetail> TransactionDetails { get; set; }
         public DbSet<Finance> Finances { get; set; }
         public DbSet<FinancialHistory> FinancialHistories { get; set; }
+        public DbSet<SalesRefunded> SalesRefundeds { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

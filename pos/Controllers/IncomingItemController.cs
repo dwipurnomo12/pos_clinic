@@ -38,7 +38,7 @@ namespace pos.Controllers
                     totalPurchase = i.TotalPurchase,
                     ItemName = i.Item.Name,
                     ItemUnit = i.Item.Unit.Name,
-                    SupplierName = i.Supplier.Name
+                
                 })
                 .ToListAsync();
 
